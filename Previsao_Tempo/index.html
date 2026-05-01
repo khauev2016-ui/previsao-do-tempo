@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Previsão do Tempo</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      color: white;
+      text-align: center;
+      margin-top: 100px;
+    }
+
+    .container {
+      background: rgba(0,0,0,0.3);
+      padding: 20px;
+      border-radius: 15px;
+      display: inline-block;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .resultado {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🌦️ Clima</h1>
+
+    <input type="text" id="cidade" placeholder="Digite a cidade">
+    <button onclick="buscarClima()">Buscar</button>
+
+    <div class="resultado" id="resultado"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
