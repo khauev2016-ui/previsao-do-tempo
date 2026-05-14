@@ -1,4 +1,4 @@
-const API_KEY = "b63a31c92b40f3ae0828edb83e847430"; // coloque sua chave aqui, site usado: OpenWeather
+const API_KEY = ""; // coloque sua chave aqui, site usado: OpenWeather
 
 async function buscarClima() {
   const cidade = document.getElementById("cidade").value;
