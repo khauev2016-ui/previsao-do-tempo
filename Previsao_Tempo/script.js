@@ -1,4 +1,4 @@
-const API_KEY = ""; // coloque sua chave aqui, site usado: OpenWeather
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 async function buscarClima() {
   const cidade = document.getElementById("cidade").value;
