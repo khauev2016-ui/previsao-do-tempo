@@ -3,341 +3,155 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Previsão do Tempo</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #f5f5f0;
-      color: #1a1a1a;
-      min-height: 100vh;
-      padding: 2rem 1rem;
-    }
-
-    .container {
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    header {
-      margin-bottom: 1.5rem;
-    }
-
-    header h1 {
-      font-size: 26px;
-      font-weight: 600;
-      color: #111;
-    }
-
-    header p {
-      font-size: 14px;
-      color: #888;
-      margin-top: 3px;
-    }
-
-    .search-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 1.5rem;
-    }
-
-    .search-row input {
-      flex: 1;
-      padding: 10px 14px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 15px;
-      font-family: inherit;
-      background: #fff;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .search-row input:focus { border-color: #888; }
-
-    .search-row button {
-      padding: 10px 18px;
-      border: none;
-      border-radius: 10px;
-      background: #111;
-      color: #fff;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.15s, transform 0.1s;
-    }
-
-    .search-row button:hover { background: #333; }
-    .search-row button:active { transform: scale(0.97); }
-    .search-row button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .error {
-      background: #fff0f0;
-      border: 1px solid #fcc;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 14px;
-      color: #c00;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 1.25rem;
-    }
-
-    .main-card {
-      background: #fff;
-      border: 1px solid #e8e8e8;
-      border-radius: 16px;
-      padding: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .main-temp {
-      font-size: 72px;
-      font-weight: 300;
-      color: #111;
-      line-height: 1;
-      letter-spacing: -2px;
-    }
-
-    .main-info { flex: 1; }
-
-    .main-city {
-      font-size: 20px;
-      font-weight: 600;
-      color: #111;
-      margin-bottom: 4px;
-    }
-
-    .main-desc {
-      font-size: 14px;
-      color: #888;
-      text-transform: capitalize;
-    }
-
-    .main-icon { font-size: 64px; line-height: 1; }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 1.5rem;
-    }
-
-    .metric {
-      background: #fff;
-      border: 1px solid #e8e8e8;
-      border-radius: 12px;
-      padding: 1rem;
-    }
-
-    .metric-label {
-      font-size: 12px;
-      color: #999;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .metric-value {
-      font-size: 22px;
-      font-weight: 500;
-      color: #111;
-    }
-
-    .metric-unit {
-      font-size: 13px;
-      font-weight: 400;
-      color: #999;
-    }
-
-    .section-label {
-      font-size: 12px;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 10px;
-    }
-
-    .forecast-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    .fc {
-      background: #fff;
-      border: 1px solid #e8e8e8;
-      border-radius: 12px;
-      padding: 0.875rem;
-      text-align: center;
-    }
-
-    .fc-day { font-size: 12px; color: #999; margin-bottom: 8px; }
-    .fc-icon { font-size: 24px; margin-bottom: 6px; }
-    .fc-temp { font-size: 15px; font-weight: 500; color: #111; }
-
-    .empty {
-      text-align: center;
-      padding: 4rem 1rem;
-      color: #bbb;
-    }
-
-    .empty i { font-size: 40px; display: block; margin-bottom: 12px; }
-    .empty p { font-size: 14px; }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spin { animation: spin 0.8s linear infinite; display: inline-block; }
-  </style>
+  <title>Previsao do Tempo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
 
-    <header>
-      <h1>Previsão do tempo</h1>
-      <p>Consulte o clima de qualquer cidade do mundo</p>
-    </header>
+<div class="app">
+  <header>
+    <div class="header-icon"><i class="fa-solid fa-cloud-sun-rain"></i></div>
+    <h1>Previsao do Tempo</h1>
+    <p>Consulte o clima por cidade ou CEP &mdash; com mapa interativo</p>
+  </header>
 
-    <div class="search-row">
-      <input type="text" id="cityInput" placeholder="Digite o nome da cidade..."
-        onkeydown="if(event.key==='Enter') buscar()" />
-      <button id="btn" onclick="buscar()">
-        <i class="ti ti-search"></i> Buscar
+  <!-- SEARCH -->
+  <section class="search-section">
+    <div class="search-tabs">
+      <button class="search-tab active" data-mode="cidade" onclick="switchTab('cidade')">
+        <i class="fa-solid fa-city"></i> Cidade
+      </button>
+      <button class="search-tab" data-mode="cep" onclick="switchTab('cep')">
+        <i class="fa-solid fa-envelope"></i> CEP
+      </button>
+      <button class="search-tab" data-mode="loc" onclick="switchTab('loc')">
+        <i class="fa-solid fa-location-crosshairs"></i> Minha Localizacao
       </button>
     </div>
-
-    <div id="err" style="display:none"></div>
-
-    <div id="main" style="display:none">
-      <div class="main-card">
-        <div class="main-temp" id="temp">—</div>
-        <div class="main-info">
-          <div class="main-city" id="city">—</div>
-          <div class="main-desc" id="desc">—</div>
-        </div>
-        <div class="main-icon" id="icon">—</div>
+    <div class="search-row">
+      <div class="search-input-wrap">
+        <i class="fa-solid fa-magnifying-glass" id="inputIcon"></i>
+        <input class="search-input" type="text" id="searchInput" placeholder="Digite o nome da cidade..." autocomplete="off">
       </div>
+      <button class="search-btn" id="searchBtn" onclick="handleSearch()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span id="searchBtnText">Buscar</span>
+      </button>
+    </div>
+    <div class="search-hint" id="searchHint"></div>
+  </section>
 
-      <div class="metrics">
-        <div class="metric">
-          <div class="metric-label"><i class="ti ti-thermometer"></i> Sensação</div>
-          <div class="metric-value"><span id="feels">—</span><span class="metric-unit"> °C</span></div>
-        </div>
-        <div class="metric">
-          <div class="metric-label"><i class="ti ti-droplet"></i> Umidade</div>
-          <div class="metric-value"><span id="humidity">—</span><span class="metric-unit"> %</span></div>
-        </div>
-        <div class="metric">
-          <div class="metric-label"><i class="ti ti-wind"></i> Vento</div>
-          <div class="metric-value"><span id="wind">—</span><span class="metric-unit"> km/h</span></div>
-        </div>
-        <div class="metric">
-          <div class="metric-label"><i class="ti ti-eye"></i> Visibilidade</div>
-          <div class="metric-value"><span id="vis">—</span><span class="metric-unit"> km</span></div>
-        </div>
-      </div>
-
-      <div class="section-label">Próximos dias</div>
-      <div class="forecast-row" id="forecast"></div>
+  <!-- MAIN -->
+  <div class="main-grid">
+    <!-- MAP -->
+    <div class="map-card">
+      <div class="card-header"><i class="fa-solid fa-map-location-dot"></i> Mapa</div>
+      <div id="map"></div>
+      <div class="map-click-hint"><i class="fa-solid fa-circle-info"></i> Clique no mapa para consultar o clima de qualquer local</div>
     </div>
 
-    <div id="empty" class="empty">
-      <i class="ti ti-cloud-search"></i>
-      <p>Digite uma cidade para ver o clima</p>
+    <!-- WEATHER -->
+    <div class="weather-card">
+      <div class="weather-placeholder" id="placeholder">
+        <i class="fa-solid fa-earth-americas"></i>
+        <p>Busque uma cidade ou CEP<br>para ver a previsao do tempo</p>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Buscando dados...</div>
+      </div>
+
+      <div class="error-msg" id="errorMsg">
+        <div class="error-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <p id="errorText">Cidade nao encontrada</p>
+      </div>
+
+      <div class="weather-result" id="weatherResult">
+        <div class="city-row">
+          <div class="city-name" id="cityName"></div>
+          <div class="city-country" id="cityCountry"></div>
+        </div>
+        <div class="temp-row">
+          <div class="temp-icon-wrap">
+            <i id="tempIcon" class="fa-solid fa-sun"></i>
+          </div>
+          <div>
+            <span class="temp-value" id="tempValue"></span>
+            <span class="temp-unit">&deg;C</span>
+          </div>
+        </div>
+        <div class="weather-desc">
+          <i class="fa-solid fa-cloud"></i>
+          <span id="weatherDesc"></span>
+        </div>
+        <div class="weather-details">
+          <div class="detail-item">
+            <div class="detail-icon thermal"><i class="fa-solid fa-temperature-half"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Sensacao</span>
+              <span class="detail-value" id="feelsLike"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon humidity"><i class="fa-solid fa-droplet"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Umidade</span>
+              <span class="detail-value" id="humidity"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon wind"><i class="fa-solid fa-wind"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Vento</span>
+              <span class="detail-value" id="wind"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon eye"><i class="fa-solid fa-eye"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Visibilidade</span>
+              <span class="detail-value" id="visibility"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon sunrise"><i class="fa-solid fa-sun"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Nascer do sol</span>
+              <span class="detail-value" id="sunrise"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon sunset"><i class="fa-regular fa-sun"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Por do sol</span>
+              <span class="detail-value" id="sunset"></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- FORECAST -->
+    <section class="forecast-section" id="forecastSection">
+      <div class="forecast-title"><i class="fa-solid fa-calendar-days"></i> Previsao para os proximos dias</div>
+      <div class="forecast-grid" id="forecastGrid"></div>
+    </section>
   </div>
 
-  <script>
-    const KEY = 'bd5e378503939ddaee76f12ad7a97608';
-    const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  <footer>
+    Dados por <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeather</a>
+    &middot; CEP via <a href="https://viacep.com.br/" target="_blank" rel="noopener">ViaCEP</a>
+    &middot; Mapa por <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a>
+  </footer>
+</div>
 
-    function wIcon(id) {
-      if (id >= 200 && id < 300) return '⛈';
-      if (id >= 300 && id < 500) return '🌦';
-      if (id >= 500 && id < 600) return '🌧';
-      if (id >= 600 && id < 700) return '❄️';
-      if (id >= 700 && id < 800) return '🌫';
-      if (id === 800) return '☀️';
-      if (id === 801) return '🌤';
-      return '⛅';
-    }
-
-    async function buscar() {
-      const city = document.getElementById('cityInput').value.trim();
-      if (!city) return;
-
-      const btn = document.getElementById('btn');
-      btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Buscando';
-      btn.disabled = true;
-
-      document.getElementById('err').style.display = 'none';
-      document.getElementById('main').style.display = 'none';
-      document.getElementById('empty').style.display = 'none';
-
-      try {
-        const [cur, fore] = await Promise.all([
-          fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${KEY}&units=metric&lang=pt_br`).then(r => r.json()),
-          fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${KEY}&units=metric&lang=pt_br`).then(r => r.json())
-        ]);
-
-        if (cur.cod !== 200) throw new Error(cur.message);
-
-        document.getElementById('temp').textContent = Math.round(cur.main.temp) + '°C';
-        document.getElementById('city').textContent = cur.name + ', ' + cur.sys.country;
-        document.getElementById('desc').textContent = cur.weather[0].description;
-        document.getElementById('icon').textContent = wIcon(cur.weather[0].id);
-        document.getElementById('feels').textContent = Math.round(cur.main.feels_like);
-        document.getElementById('humidity').textContent = cur.main.humidity;
-        document.getElementById('wind').textContent = Math.round(cur.wind.speed * 3.6);
-        document.getElementById('vis').textContent = Math.round((cur.visibility || 0) / 1000);
-
-        const seen = {};
-        const today = new Date().toDateString();
-        const slots = fore.list.filter(f => {
-          const d = new Date(f.dt * 1000).toDateString();
-          if (seen[d] || d === today) return false;
-          seen[d] = true;
-          return true;
-        }).slice(0, 4);
-
-        document.getElementById('forecast').innerHTML = slots.map(f => {
-          const d = new Date(f.dt * 1000);
-          return `<div class="fc">
-            <div class="fc-day">${DAYS[d.getDay()]}</div>
-            <div class="fc-icon">${wIcon(f.weather[0].id)}</div>
-            <div class="fc-temp">${Math.round(f.main.temp)}°C</div>
-          </div>`;
-        }).join('');
-
-        document.getElementById('main').style.display = 'block';
-
-      } catch (e) {
-        const msg = e.message === 'city not found'
-          ? 'Cidade não encontrada.'
-          : 'Erro ao buscar dados. Tente novamente.';
-        document.getElementById('err').innerHTML =
-          `<div class="error"><i class="ti ti-alert-circle"></i> ${msg}</div>`;
-        document.getElementById('err').style.display = 'block';
-        document.getElementById('empty').style.display = 'block';
-
-      } finally {
-        btn.innerHTML = '<i class="ti ti-search"></i> Buscar';
-        btn.disabled = false;
-      }
-    }
-  </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
