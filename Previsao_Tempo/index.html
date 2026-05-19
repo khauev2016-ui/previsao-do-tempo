@@ -2,54 +2,156 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Previsão do Tempo</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
-      color: white;
-      text-align: center;
-      margin-top: 100px;
-    }
-
-    .container {
-      background: rgba(0,0,0,0.3);
-      padding: 20px;
-      border-radius: 15px;
-      display: inline-block;
-    }
-
-    input {
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      margin-right: 10px;
-    }
-
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    .resultado {
-      margin-top: 20px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Previsao do Tempo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <div class="container">
-    <h1>🌦️ Clima</h1>
+<div class="app">
+  <header>
+    <div class="header-icon"><i class="fa-solid fa-cloud-sun-rain"></i></div>
+    <h1>Previsao do Tempo</h1>
+    <p>Consulte o clima por cidade ou CEP &mdash; com mapa interativo</p>
+  </header>
 
-    <input type="text" id="cidade" placeholder="Digite a cidade">
-    <button onclick="buscarClima()">Buscar</button>
+  <!-- SEARCH -->
+  <section class="search-section">
+    <div class="search-tabs">
+      <button class="search-tab active" data-mode="cidade" onclick="switchTab('cidade')">
+        <i class="fa-solid fa-city"></i> Cidade
+      </button>
+      <button class="search-tab" data-mode="cep" onclick="switchTab('cep')">
+        <i class="fa-solid fa-envelope"></i> CEP
+      </button>
+      <button class="search-tab" data-mode="loc" onclick="switchTab('loc')">
+        <i class="fa-solid fa-location-crosshairs"></i> Minha Localizacao
+      </button>
+    </div>
+    <div class="search-row">
+      <div class="search-input-wrap">
+        <i class="fa-solid fa-magnifying-glass" id="inputIcon"></i>
+        <input class="search-input" type="text" id="searchInput" placeholder="Digite o nome da cidade..." autocomplete="off">
+      </div>
+      <button class="search-btn" id="searchBtn" onclick="handleSearch()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span id="searchBtnText">Buscar</span>
+      </button>
+    </div>
+    <div class="search-hint" id="searchHint"></div>
+  </section>
 
-    <div class="resultado" id="resultado"></div>
+  <!-- MAIN -->
+  <div class="main-grid">
+    <!-- MAP -->
+    <div class="map-card">
+      <div class="card-header"><i class="fa-solid fa-map-location-dot"></i> Mapa</div>
+      <div id="map"></div>
+      <div class="map-click-hint"><i class="fa-solid fa-circle-info"></i> Clique no mapa para consultar o clima de qualquer local</div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="weather-card">
+      <div class="weather-placeholder" id="placeholder">
+        <i class="fa-solid fa-earth-americas"></i>
+        <p>Busque uma cidade ou CEP<br>para ver a previsao do tempo</p>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Buscando dados...</div>
+      </div>
+
+      <div class="error-msg" id="errorMsg">
+        <div class="error-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <p id="errorText">Cidade nao encontrada</p>
+      </div>
+
+      <div class="weather-result" id="weatherResult">
+        <div class="city-row">
+          <div class="city-name" id="cityName"></div>
+          <div class="city-country" id="cityCountry"></div>
+        </div>
+        <div class="temp-row">
+          <div class="temp-icon-wrap">
+            <i id="tempIcon" class="fa-solid fa-sun"></i>
+          </div>
+          <div>
+            <span class="temp-value" id="tempValue"></span>
+            <span class="temp-unit">&deg;C</span>
+          </div>
+        </div>
+        <div class="weather-desc">
+          <i class="fa-solid fa-cloud"></i>
+          <span id="weatherDesc"></span>
+        </div>
+        <div class="weather-details">
+          <div class="detail-item">
+            <div class="detail-icon thermal"><i class="fa-solid fa-temperature-half"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Sensacao</span>
+              <span class="detail-value" id="feelsLike"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon humidity"><i class="fa-solid fa-droplet"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Umidade</span>
+              <span class="detail-value" id="humidity"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon wind"><i class="fa-solid fa-wind"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Vento</span>
+              <span class="detail-value" id="wind"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon eye"><i class="fa-solid fa-eye"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Visibilidade</span>
+              <span class="detail-value" id="visibility"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon sunrise"><i class="fa-solid fa-sun"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Nascer do sol</span>
+              <span class="detail-value" id="sunrise"></span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon sunset"><i class="fa-regular fa-sun"></i></div>
+            <div class="detail-info">
+              <span class="detail-label">Por do sol</span>
+              <span class="detail-value" id="sunset"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORECAST -->
+    <section class="forecast-section" id="forecastSection">
+      <div class="forecast-title"><i class="fa-solid fa-calendar-days"></i> Previsao para os proximos dias</div>
+      <div class="forecast-grid" id="forecastGrid"></div>
+    </section>
   </div>
 
-  <script src="script.js"></script>
+  <footer>
+    Dados por <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeather</a>
+    &middot; CEP via <a href="https://viacep.com.br/" target="_blank" rel="noopener">ViaCEP</a>
+    &middot; Mapa por <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
