@@ -8,15 +8,63 @@
   // ==================
   // CONFIG
   // ==================
-  // -------------------------------------------------------
-  // IMPORTANTE: Se a chave abaixo nao funcionar, gere uma
-  // nova GRATUITA em: https://home.openweathermap.org/api_keys
-  // (chaves novas demoram ate 2h para ativar)
-  // -------------------------------------------------------
   var API_KEY = "5fc4f0de89a62dcf5bf11c85fea44d44";
   var currentMode = "cidade";
   var leafletMap = null;
   var weatherMarker = null;
+  var currentWeatherData = null;
+
+  // ==================
+  // GROQ CONFIG UI
+  // ==================
+  function getGroqKey() {
+    return localStorage.getItem('groq_api_key') || '';
+  }
+
+  function updateGroqBadge() {
+    var badge = document.getElementById('groqStatusBadge');
+    var key = getGroqKey();
+    if (key) {
+      badge.textContent = 'Ativo';
+      badge.classList.add('active');
+    } else {
+      badge.textContent = 'Não configurado';
+      badge.classList.remove('active');
+    }
+  }
+
+  window.toggleGroqConfig = function () {
+    var body = document.getElementById('groqConfigBody');
+    var chevron = document.getElementById('groqChevron');
+    var isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+    if (!isOpen) {
+      var input = document.getElementById('groqKeyInput');
+      var saved = getGroqKey();
+      if (saved) input.value = saved;
+      input.focus();
+    }
+  };
+
+  window.saveGroqKey = function () {
+    var val = document.getElementById('groqKeyInput').value.trim();
+    if (!val) { alert('Cole uma chave válida antes de salvar.'); return; }
+    localStorage.setItem('groq_api_key', val);
+    updateGroqBadge();
+    document.getElementById('groqConfigBody').classList.remove('open');
+    document.getElementById('groqChevron').classList.remove('open');
+    if (currentWeatherData) analisarClimaComIA(currentWeatherData);
+  };
+
+  window.clearGroqKey = function () {
+    localStorage.removeItem('groq_api_key');
+    document.getElementById('groqKeyInput').value = '';
+    updateGroqBadge();
+    document.getElementById('aiSection').classList.remove('visible');
+  };
+
+  updateGroqBadge();
 
   // ==================
   // MAP
@@ -356,7 +404,8 @@
       var dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
 
       days.forEach(function (day) {
-        var d = new Date(day.dt * 1000);
+        var dateParts = day.dt_txt.split(" ")[0].split("-");
+        var d = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
         var iconInfo = getWeatherIcon(day.weather[0].icon);
         var item = document.createElement("div");
         item.className = "forecast-item";
@@ -383,6 +432,8 @@
       });
 
       document.getElementById("forecastSection").classList.add("visible");
+
+      if (currentWeatherData) analisarClimaComIA(currentWeatherData, days);
     } catch (e) {
       console.error("Forecast error:", e);
     }
@@ -428,6 +479,8 @@
 
     document.getElementById("weatherResult").classList.add("visible");
 
+    currentWeatherData = data;
+
     // Update map
     updateMap(
       data.coord.lat,
@@ -439,6 +492,166 @@
         "\u00B0C \u2014 " +
         data.weather[0].description
     );
+  }
+
+  // ==================
+  // GROQ AI ANALYSIS
+  // ==================
+  async function analisarClimaComIA(weatherData, forecastDays) {
+    var aiSection = document.getElementById('aiSection');
+    var aiContent = document.getElementById('aiContent');
+    var groqKey = getGroqKey();
+
+    aiSection.classList.add('visible');
+
+    if (!groqKey) {
+      aiContent.innerHTML =
+        '<div class="ai-no-key">' +
+        '<i class="fa-solid fa-robot"></i>' +
+        '<span>Configure sua chave Groq acima para receber análise de eventos climáticos severos com IA.</span>' +
+        '</div>';
+      return;
+    }
+
+    aiContent.innerHTML =
+      '<div class="ai-loading">' +
+      '<div class="ai-spinner"></div>' +
+      '<span>Analisando condições climáticas com LLaMA 3.3…</span>' +
+      '</div>';
+
+    var forecastResume = forecastDays
+      ? forecastDays.map(function (d) {
+          var date = new Date(d.dt * 1000).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+          return date + ': ' + Math.round(d.main.temp_min) + '–' + Math.round(d.main.temp_max) + '°C, ' +
+            d.weather[0].description + ', vento ' + d.wind.speed + ' m/s, umidade ' + d.main.humidity + '%';
+        }).join('\n')
+      : 'Dados de previsão não disponíveis.';
+
+    var prompt =
+      'Você é um especialista em meteorologia e riscos climáticos. Analise os dados abaixo e identifique possíveis eventos climáticos severos, alertas e riscos para a população.\n\n' +
+      '=== CLIMA ATUAL — ' + weatherData.name + ' (' + (weatherData.sys.country || '') + ') ===\n' +
+      'Temperatura: ' + Math.round(weatherData.main.temp) + '°C (sensação: ' + Math.round(weatherData.main.feels_like) + '°C)\n' +
+      'Condição: ' + weatherData.weather[0].description + '\n' +
+      'Umidade: ' + weatherData.main.humidity + '%\n' +
+      'Vento: ' + weatherData.wind.speed + ' m/s' + (weatherData.wind.gust ? ' (rajadas: ' + weatherData.wind.gust + ' m/s)' : '') + '\n' +
+      'Visibilidade: ' + (weatherData.visibility ? (weatherData.visibility / 1000).toFixed(1) + ' km' : 'n/d') + '\n' +
+      'Pressão: ' + weatherData.main.pressure + ' hPa\n\n' +
+      '=== PREVISÃO PRÓXIMOS DIAS ===\n' + forecastResume + '\n\n' +
+      'Responda APENAS com um JSON válido no formato abaixo, sem texto adicional:\n' +
+      '{\n' +
+      '  "nivel_geral": "danger|warning|info|ok",\n' +
+      '  "alertas": [\n' +
+      '    {\n' +
+      '      "nivel": "danger|warning|info|ok",\n' +
+      '      "icone": "fa-solid fa-<nome-do-icone>",\n' +
+      '      "titulo": "título curto do alerta",\n' +
+      '      "descricao": "descrição detalhada em português do Brasil"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "analise": "parágrafo de análise geral em português (2-3 frases)",\n' +
+      '  "recomendacoes": ["recomendação 1", "recomendação 2"]\n' +
+      '}\n\n' +
+      'Regras:\n' +
+      '- Use "danger" para riscos sérios (tempestades, granizo, ventos >20 m/s, calor extremo >38°C, frio extremo <5°C)\n' +
+      '- Use "warning" para alertas moderados (chuva forte, vento >12 m/s, umidade extrema, névoa densa)\n' +
+      '- Use "info" para observações relevantes\n' +
+      '- Use "ok" se as condições forem favoráveis\n' +
+      '- Inclua pelo menos 1 item em alertas\n' +
+      '- Ícones: use nomes válidos do Font Awesome 6 (ex: fa-wind, fa-cloud-bolt, fa-temperature-high, fa-droplet, fa-smog, fa-snowflake, fa-fire, fa-circle-check)\n' +
+      '- Máximo 4 alertas, máximo 4 recomendações';
+
+    try {
+      var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + groqKey,
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.4,
+          max_tokens: 900,
+          response_format: { type: 'json_object' },
+        }),
+      });
+
+      if (res.status === 401) {
+        renderAIError('Chave Groq inválida ou expirada. Verifique nas configurações acima.');
+        return;
+      }
+      if (res.status === 429) {
+        renderAIError('Limite de requisições Groq atingido. Tente novamente em instantes.');
+        return;
+      }
+      if (!res.ok) {
+        renderAIError('Erro na API Groq (HTTP ' + res.status + '). Tente novamente.');
+        return;
+      }
+
+      var json = await res.json();
+      var raw = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+      if (!raw) throw new Error('Resposta vazia da IA');
+
+      var analise = JSON.parse(raw);
+      renderAIAnalysis(analise);
+    } catch (e) {
+      console.error('Groq error:', e);
+      renderAIError('Não foi possível obter a análise de IA. Verifique sua chave e conexão.');
+    }
+  }
+
+  function renderAIAnalysis(data) {
+    var aiContent = document.getElementById('aiContent');
+    var html = '';
+
+    if (data.alertas && data.alertas.length > 0) {
+      html += '<div class="ai-alerts">';
+      data.alertas.forEach(function (alerta) {
+        var nivel = ['danger', 'warning', 'info', 'ok'].includes(alerta.nivel) ? alerta.nivel : 'info';
+        var icone = alerta.icone || 'fa-solid fa-circle-info';
+        html +=
+          '<div class="alert-card alert-' + nivel + '">' +
+          '<div class="alert-icon"><i class="' + escapeHTML(icone) + '"></i></div>' +
+          '<div class="alert-body">' +
+          '<div class="alert-title">' + escapeHTML(alerta.titulo) + '</div>' +
+          '<div class="alert-desc">' + escapeHTML(alerta.descricao) + '</div>' +
+          '</div></div>';
+      });
+      html += '</div>';
+    }
+
+    if (data.analise) {
+      html += '<div class="ai-summary">' + escapeHTML(data.analise) + '</div>';
+    }
+
+    if (data.recomendacoes && data.recomendacoes.length > 0) {
+      html += '<div class="ai-recommendations">' +
+        '<div class="ai-recommendations-title"><i class="fa-solid fa-list-check"></i> Recomendações</div>' +
+        '<div class="ai-rec-list">';
+      data.recomendacoes.forEach(function (rec) {
+        html += '<div class="ai-rec-item">' + escapeHTML(rec) + '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    document.getElementById('aiContent').innerHTML = html;
+  }
+
+  function renderAIError(msg) {
+    document.getElementById('aiContent').innerHTML =
+      '<div class="ai-error">' +
+      '<i class="fa-solid fa-triangle-exclamation"></i>' +
+      '<span>' + escapeHTML(msg) + '</span>' +
+      '</div>';
+  }
+
+  function escapeHTML(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   // ==================
@@ -490,6 +703,8 @@
     document.getElementById("errorMsg").classList.remove("visible");
     document.getElementById("weatherResult").classList.remove("visible");
     document.getElementById("forecastSection").classList.remove("visible");
+    document.getElementById("aiSection").classList.remove("visible");
+    currentWeatherData = null;
   }
 
   // ==================

@@ -46,6 +46,37 @@
     <div class="search-hint" id="searchHint"></div>
   </section>
 
+  <!-- GROQ IA CONFIG -->
+  <div class="groq-config-bar" id="groqConfigBar">
+    <button class="groq-toggle-btn" onclick="toggleGroqConfig()">
+      <i class="fa-solid fa-robot"></i>
+      <span>Análise de IA — Groq</span>
+      <span class="groq-status-badge" id="groqStatusBadge">Não configurado</span>
+      <i class="fa-solid fa-chevron-down groq-chevron" id="groqChevron"></i>
+    </button>
+    <div class="groq-config-body" id="groqConfigBody">
+      <div class="groq-input-row">
+        <div class="groq-input-wrap">
+          <i class="fa-solid fa-key"></i>
+          <input type="password" id="groqKeyInput" class="groq-key-input"
+            placeholder="Cole sua chave da API Groq (gsk_...)" autocomplete="off" />
+        </div>
+        <button class="groq-save-btn" onclick="saveGroqKey()">
+          <i class="fa-solid fa-check"></i> Salvar
+        </button>
+        <button class="groq-clear-btn" onclick="clearGroqKey()">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+      <p class="groq-hint">
+        <i class="fa-solid fa-circle-info"></i>
+        A chave é salva no navegador (localStorage). Obtenha a sua em
+        <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com</a>
+        — modelo: <strong>LLaMA 3.3 70B</strong>.
+      </p>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <div class="main-grid">
     <!-- MAP -->
@@ -142,12 +173,22 @@
       <div class="forecast-title"><i class="fa-solid fa-calendar-days"></i> Previsao para os proximos dias</div>
       <div class="forecast-grid" id="forecastGrid"></div>
     </section>
+
+    <!-- AI ANALYSIS -->
+    <section class="ai-section" id="aiSection">
+      <div class="ai-section-header">
+        <span><i class="fa-solid fa-robot"></i> Análise de IA — Eventos Climáticos</span>
+        <span class="ai-powered-by">Groq · LLaMA 3.3</span>
+      </div>
+      <div id="aiContent"></div>
+    </section>
   </div>
 
   <footer>
     Dados por <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeather</a>
     &middot; CEP via <a href="https://viacep.com.br/" target="_blank" rel="noopener">ViaCEP</a>
     &middot; Mapa por <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a>
+    &middot; IA por <a href="https://groq.com/" target="_blank" rel="noopener">Groq</a>
   </footer>
 </div>
 
